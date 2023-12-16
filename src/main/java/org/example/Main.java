@@ -3,48 +3,45 @@ package org.example;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+
+import java.sql.*;
+import java.util.List;
 
 public class Main {
-    public static void main(String[] args) throws SQLException {
+    private final static String url = "jdbc:mysql://localhost:3306/";
+    private final static String user = "root";
+    private final static String password = "8520";
+    public static void main(String[] args) {
+        try(Connection connection = DriverManager.getConnection(url, user, password)){
+            // Создание базы данных
+            createDatabase(connection);
+            System.out.println("Database created successfully");
+            // Использование базы данных
+            useDatabase(connection);
+            System.out.println("Use database successfully");
+            // Создание таблицы
+            createTable(connection);
+            System.out.println("Create table successfully");
+            SchoolDB.createCourse();
+            SchoolDB.printCourse();
+//            SchoolDB.updateCourse();
+//            SchoolDB.printCourse();
+//            SchoolDB.dellCourse();
+//            SchoolDB.printCourse();
+//            SchoolDB.dellAllCourse();
+//            dropSchema(connection);
+//            System.out.println("Database delete successfully");
+        }
+        catch (SQLException e){
+            e.printStackTrace();
+        }
+    }
 
-        SessionFactory sessionFactory = new Configuration()
-                .configure("hibernate.cfg.xml")
-                .addAnnotatedClass(Course.class)
-                .buildSessionFactory();
-
-        // Создание сессии
-        Session session = sessionFactory.getCurrentSession();
-
-        // Начало транзакции
-        session.beginTransaction();
-
-        String sql = "From " + Course.class.getSimpleName();
-        System.out.println("sql = " + sql);
-
-        // Создание объекта
-        Course course = Course.create();
-        session.save(course);
-        System.out.println("Object student save successfully");
-
-        // Чтение из базы
-        Course retrievedStudent = session.get(Course.class, course.getId());
-        System.out.println("Object student retrieved successfully");
-        System.out.println("Retrieved student object: " + retrievedStudent);
-
-        // Обновление объекта
-        retrievedStudent.updateName();
-        retrievedStudent.updateAge();
-        session.update(retrievedStudent);
-        System.out.println("Object student update successfully");
-
-        session.delete(retrievedStudent);
-        System.out.println("Object student delete successfully");
-
-        session.getTransaction().commit();
-        session.close();
+    private static void createDatabase(Connection connection) throws SQLException {
+        String createDatabaseSQL =  "CREATE DATABASE IF NOT EXISTS schoolDB;";
+        try (PreparedStatement statement = connection.prepareStatement(createDatabaseSQL)) {
+            statement.execute();
+        }
     }
 
     private static void useDatabase(Connection connection) throws SQLException {
@@ -59,5 +56,10 @@ public class Main {
         try (PreparedStatement statement = connection.prepareStatement(createTableSQL)) {
             statement.execute();
         }
+    }
+
+    private static void dropSchema(Connection connection) throws SQLException {
+        Statement statement = connection.createStatement();
+        statement.execute("DROP SCHEMA schoolDB");
     }
 }

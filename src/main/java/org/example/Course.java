@@ -14,6 +14,10 @@ public class Course {
     private String title;
     private int duration;
 
+    public Course() {
+
+    }
+
     public Course(String title, int duration) {
         this.title = title;
         this.duration = duration;
